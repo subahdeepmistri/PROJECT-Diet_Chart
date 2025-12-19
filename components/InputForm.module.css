@@ -1,0 +1,80 @@
+.form {
+    background: var(--surface);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    max-width: 500px;
+    width: 100%;
+    margin: 0 auto;
+    border: 1px solid var(--border);
+}
+
+.title {
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.field {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.field label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.field input,
+.field select {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 1rem;
+    background: var(--surface-alt);
+    transition: border-color 0.2s;
+}
+
+.field input:focus,
+.field select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--surface);
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: var(--radius-md);
+    margin-top: 1rem;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.submitBtn:hover {
+    background: var(--primary-hover);
+}
+
+.submitBtn:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
