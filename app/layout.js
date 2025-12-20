@@ -1,27 +1,27 @@
-import { Outfit, Inter } from "next/font/google";
-import "./globals.css";
-
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
+import { Inter, Outfit } from 'next/font/google';
+import './globals.css';
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
 });
 
 export const metadata = {
-  title: "Indian Diet Charts",
-  description: "Personalized Indian diet plans for fitness.",
+  title: 'AI Diet Planner',
+  description: 'Premium personalized nutrition plans',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${outfit.variable} ${inter.variable}`}>
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
+      <body className="font-sans antialiased text-slate-100 bg-slate-900" suppressHydrationWarning={true}>
         {children}
       </body>
     </html>

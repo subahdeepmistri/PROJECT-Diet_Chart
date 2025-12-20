@@ -1,64 +1,68 @@
 "use client";
 
-import { useState } from 'react';
-import InputForm from '@/components/InputForm';
+import { useState, useEffect } from 'react';
+import { WizardProvider, useWizard } from '@/components/Wizard/WizardContext';
+import WizardContainer from '@/components/Wizard/WizardContainer';
 import ResultsDashboard from '@/components/ResultsDashboard';
 import { calculateDailyCalories } from '@/lib/calculator';
 import { generateMealPlan, getAlternativeMeal, calculatePlanTotals } from '@/lib/generator';
-import styles from './page.module.css';
 
-export default function Home() {
+// Wrapper to bridge Context and Page Logic
+function AppContent() {
+  const { isFinished, formData } = useWizard();
   const [plan, setPlan] = useState(null);
+  const [mounted, setMounted] = useState(false);
 
-  const handleGenerate = (formData) => {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isFinished && formData) {
+      handleGenerate(formData);
+    }
+  }, [isFinished, formData]);
+
+  const handleGenerate = (data) => {
     // 1. Calculate Calories
     const analysis = calculateDailyCalories(
-      formData.age,
-      formData.gender,
-      formData.weight,
-      formData.height,
-      formData.activity,
-      formData.goal
+      data.age,
+      data.gender,
+      data.weight,
+      data.height,
+      data.activity,
+      data.goal,
+      { targetWeight: data.targetWeight }
     );
 
     // 2. Generate Plan
     const generatedPlan = generateMealPlan(
       analysis.targetCalories,
-      formData.preference,
-      formData.goal,
+      data.preference,
+      data.goal,
       analysis
     );
 
-    // 3. Set Full Data
+    // 3. Set State
     setPlan({
       ...generatedPlan,
-      analysis: analysis, // Pass calculation details to results
-      user: formData
+      analysis: analysis,
+      user: data
     });
-
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSwap = (mealType) => {
-    if (!plan) return;
+    if (!plan || !plan.mealPlan[mealType]) return;
 
-    // Get current meal ID (assuming single item in array for now)
     const currentMeal = plan.mealPlan[mealType][0];
+    const currentId = currentMeal ? currentMeal.id : null;
 
-    // Get alternative
-    const newMeal = getAlternativeMeal(mealType, currentMeal.id, plan.user.preference);
+    // Pass null if no current meal exists, generator should handle it
+    const newMeal = getAlternativeMeal(mealType, currentId, plan.user.preference);
 
-    // Update plan structure
-    const updatedMealPlan = {
-      ...plan.mealPlan,
-      [mealType]: [newMeal]
-    };
-
-    // Recalculate totals
+    const updatedMealPlan = { ...plan.mealPlan, [mealType]: [newMeal] };
     const newTotals = calculatePlanTotals(updatedMealPlan);
 
-    // Update state
     setPlan(prev => ({
       ...prev,
       mealPlan: updatedMealPlan,
@@ -66,71 +70,42 @@ export default function Home() {
     }));
   };
 
+  if (plan) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <ResultsDashboard
+          plan={plan}
+          onReset={() => window.location.reload()}
+          onSwap={handleSwap}
+        />
+      </div>
+    );
+  }
+
   return (
-    <main className={styles.main}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className="container">
-          <div className={styles.logo}>Diets.in</div>
-        </div>
-      </header>
+    <>
+      <section className="py-12 text-center space-y-4">
+        <h1 className="text-4xl md:text-6xl font-heading font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          AI Diet Planner
+        </h1>
+        <p className="text-muted max-w-lg mx-auto text-lg">
+          Premium nutrition plans tailored to your biochemistry.
+        </p>
+      </section>
 
-      {plan ? (
-        /* Results View */
-        <div className="container" style={{ padding: '2rem 0' }}>
-          <ResultsDashboard plan={plan} onReset={() => setPlan(null)} onSwap={handleSwap} />
-        </div>
-      ) : (
-        /* Landing View */
-        <>
-          <section className={styles.hero}>
-            <div className="container">
-              <h1 className={styles.heroTitle}>
-                Get your personalized Indian<br />diet plan
-              </h1>
-              <p className={styles.heroSubtitle}>
-                Based on your unique body type, fitness goal, and lifestyle.
-                Backed by science, designed for Indian homes.
-              </p>
-              <button
-                className="btn btn-primary"
-                onClick={() => document.getElementById('calculator').scrollIntoView({ behavior: 'smooth' })}
-              >
-                Start Your Journey
-              </button>
-            </div>
-          </section>
+      <section className="mt-8">
+        <WizardContainer />
+      </section>
+    </>
+  );
+}
 
-          <section className={styles.stepsSection}>
-            <div className="container">
-              <h2 className={styles.sectionTitle}>How it works</h2>
-              <div className={styles.stepsGrid}>
-                <div className={styles.stepCard}>
-                  <span className={styles.stepIcon}>📝</span>
-                  <h3 className={styles.stepTitle}>1. Enter Details</h3>
-                  <p className={styles.stepDesc}>Tell us about your body stats and activity level.</p>
-                </div>
-                <div className={styles.stepCard}>
-                  <span className={styles.stepIcon}>🎯</span>
-                  <h3 className={styles.stepTitle}>2. Choose Goal</h3>
-                  <p className={styles.stepDesc}>Select Fat Loss, Muscle Gain, or Healthy Weight.</p>
-                </div>
-                <div className={styles.stepCard}>
-                  <span className={styles.stepIcon}>🥗</span>
-                  <h3 className={styles.stepTitle}>3. Get Plan</h3>
-                  <p className={styles.stepDesc}>Receive a custom day-wise meal plan instantly.</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section id="calculator" className={styles.formSection}>
-            <div className="container">
-              <InputForm onGenerate={handleGenerate} />
-            </div>
-          </section>
-        </>
-      )}
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-background text-text selection:bg-primary selection:text-black" suppressHydrationWarning>
+      <WizardProvider>
+        <AppContent />
+      </WizardProvider>
     </main>
   );
 }
