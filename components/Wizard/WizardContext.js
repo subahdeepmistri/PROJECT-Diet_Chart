@@ -14,7 +14,9 @@ export function WizardProvider({ children }) {
         activity: '',
         goal: '',
         goalIntensity: 0, // for slider
-        preference: 'both' // veg, non-veg, vegan, both
+        preference: 'both', // veg, non-veg, vegan, both
+        mealCount: '4', // '3' or '4' (with snacks)
+        exclusions: [] // food allergens/dislikes to avoid
     });
     const [isFinished, setIsFinished] = useState(false);
 
